@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+:root {
+  --r-emerald: #10b981;
+  --r-teal: #14b8a6;
+  --r-gold: #f5c451;
+  --r-bg: #f7faf9;
+  --r-bg-glass: rgba(255, 255, 255, 0.6);
+  --r-text: #0f2e25;
+  --r-glow: rgba(16, 185, 129, 0.45);
+}
+
+.dark {
+  --r-bg: #07120f;
+  --r-bg-glass: rgba(12, 30, 25, 0.55);
+  --r-text: #e6fff6;
+  --r-glow: rgba(20, 184, 166, 0.55);
+}
+
+html,
+body {
+  background: var(--r-bg);
+  color: var(--r-text);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.glass {
+  background: var(--r-bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.glow {
+  box-shadow: 0 0 24px var(--r-glow);
+}
+
+.aurora {
+  background: radial-gradient(
+      60% 60% at 20% 20%,
+      rgba(16, 185, 129, 0.35),
+      transparent 60%
+    ),
+    radial-gradient(50% 50% at 80% 30%, rgba(245, 196, 81, 0.25), transparent 60%),
+    radial-gradient(60% 60% at 50% 90%, rgba(20, 184, 166, 0.3), transparent 60%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
