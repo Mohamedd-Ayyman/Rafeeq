@@ -4,6 +4,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import FloatingNav from "@/components/FloatingNav";
 import GlassCard from "@/components/GlassCard";
 import GlowButton from "@/components/GlowButton";
+import BuddyActivity from "@/components/BuddyActivity";
 import { useAuth } from "@/context/AuthContext";
 import { useNotification } from "@/context/NotificationContext";
 import { apiCall } from "@/lib/api";
@@ -53,25 +54,14 @@ function BuddyInner() {
   };
 
   const respond = async (id, status) => {
-    try {
-      await apiCall("/api/buddy/respond", { method: "POST", body: { buddyId: id, status } });
-      load();
-    } catch (e) {
-      notify(e.message, "error");
-    }
+    await apiCall("/api/buddy/respond", { method: "POST", body: { buddyId: id, status } });
+    load();
   };
 
   const encourage = async (id) => {
-    try {
-      await apiCall("/api/buddy/encourage", { method: "POST", body: { buddyId: id } });
-      notify("Encouragement sent", "success");
-    } catch (e) {
-      notify(e.message, "error");
-    }
+    await apiCall("/api/buddy/encourage", { method: "POST", body: { buddyId: id } });
+    notify("Encouragement sent", "success");
   };
-
-  const otherOf = (b) =>
-    String(b.requester?._id) === String(user._id) ? b.addressee : b.requester;
 
   return (
     <main className="min-h-screen px-4 pt-8 pb-32 max-w-2xl mx-auto">
@@ -91,40 +81,13 @@ function BuddyInner() {
         </div>
       </GlassCard>
 
-      <div className="space-y-3">
-        {buddies.map((b) => {
-          const other = otherOf(b);
-          return (
-            <GlassCard key={b._id} className="flex justify-between items-center">
-              <div>
-                <div className="font-medium">{other?.name}</div>
-                <div className="text-xs opacity-70">
-                  {b.status}
-                  {String(b.addressee?._id) === String(user._id) && b.status === "pending"
-                    ? " · awaiting your response"
-                    : ""}
-                </div>
-              </div>
-              <div className="flex gap-2">
-                {String(b.addressee?._id) === String(user._id) && b.status === "pending" && (
-                  <>
-                    <GlowButton onClick={() => respond(b._id, "accepted")}>Accept</GlowButton>
-                    <GlowButton variant="ghost" onClick={() => respond(b._id, "declined")}>
-                      Decline
-                    </GlowButton>
-                  </>
-                )}
-                {b.status === "accepted" && (
-                  <GlowButton variant="ghost" onClick={() => encourage(b._id)}>
-                    Encourage
-                  </GlowButton>
-                )}
-              </div>
-            </GlassCard>
-          );
-        })}
-        {buddies.length === 0 && <div className="opacity-60">No buddies yet.</div>}
-      </div>
+      <BuddyActivity
+        buddies={buddies}
+        currentUserId={user?._id}
+        onRespond={respond}
+        onEncourage={encourage}
+        onError={(m) => notify(m, "error")}
+      />
     </main>
   );
 }

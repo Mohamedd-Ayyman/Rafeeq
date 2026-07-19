@@ -7,7 +7,7 @@ export const connectDB = async () => {
     console.log(`MongoDB connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`MongoDB connection error: ${error.message}`);
-    process.exit(1);
+    console.warn("Server will continue without database connectivity.");
   }
 
   mongoose.connection.on("error", (err) => {

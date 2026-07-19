@@ -4,6 +4,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import FloatingNav from "@/components/FloatingNav";
 import GlassCard from "@/components/GlassCard";
 import GlowButton from "@/components/GlowButton";
+import PrayerTimeline from "@/components/PrayerTimeline";
 import { useAuth } from "@/context/AuthContext";
 import { useNotification } from "@/context/NotificationContext";
 import { useJourney } from "@/context/JourneyContext";
@@ -66,6 +67,8 @@ function PrayerInner() {
     <main className="min-h-screen px-4 pt-8 pb-32 max-w-2xl mx-auto">
       <h1 className="text-3xl font-bold mb-1">Prayer</h1>
       <p className="opacity-70 mb-6">Record each salah with intention.</p>
+
+      <PrayerTimeline logs={logs} onLog={(p) => { setPrayer(p); log(); }} />
 
       <GlassCard className="mb-6">
         <div className="flex flex-wrap gap-2 mb-4">

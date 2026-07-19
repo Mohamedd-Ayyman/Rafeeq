@@ -1,22 +1,16 @@
 "use client";
+import { useEffect, useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import FloatingNav from "@/components/FloatingNav";
 import GlassCard from "@/components/GlassCard";
 import AnimatedProgressRing from "@/components/AnimatedProgressRing";
+import StreakFlame from "@/components/StreakFlame";
+import JourneyMap from "@/components/JourneyMap";
+import JourneyRecap from "@/components/JourneyRecap";
 import { useJourney } from "@/context/JourneyContext";
 import { useAuth } from "@/context/AuthContext";
 import { deriveLevel } from "@/lib/constants";
-
-function StreakFlame({ value, label }) {
-  const emojis = ["", "🔥", "🔥🔥", "🔥🔥🔥", "🌟🔥", "🌟⭐🔥"];
-  return (
-    <GlassCard>
-      <div className="text-3xl">{emojis[Math.min(value, 4)] || "🌟⭐🔥"}</div>
-      <div className="text-2xl font-bold mt-2">{value}</div>
-      <div className="text-sm opacity-70">{label}</div>
-    </GlassCard>
-  );
-}
+import { apiCall } from "@/lib/api";
 
 export default function JourneyPage() {
   return (
@@ -30,7 +24,25 @@ export default function JourneyPage() {
 function JourneyInner() {
   const { summary } = useJourney();
   const { user } = useAuth();
+  const [heat, setHeat] = useState({});
   const level = deriveLevel(user?.xp || 0);
+
+  useEffect(() => {
+    apiCall("/api/journey/heatmap?days=90")
+      .then((r) => setHeat(r.data.heat))
+      .catch(() => {});
+  }, []);
+
+  const progress = summary
+    ? {
+        prayer: (summary.streaks || []).some((s) => s.type === "prayer" && s.current > 0) || summary.counts?.prayers > 0,
+        quran: (summary.counts?.quranPages || 0) > 0,
+        dhikr: (summary.counts?.dhikr || 0) > 0,
+        wheel: summary.counts?.prayers > 0 && summary.counts?.quranPages > 0,
+        challenges: false,
+        buddy: false,
+      }
+    : {};
 
   return (
     <main className="min-h-screen px-4 pt-8 pb-32 max-w-3xl mx-auto">
@@ -39,7 +51,9 @@ function JourneyInner() {
 
       {summary && (
         <>
-          <div className="flex items-center gap-6 mb-6">
+          <JourneyMap progress={progress} />
+
+          <div className="flex items-center gap-6 my-6">
             <AnimatedProgressRing
               progress={level.nextLevel ? (level.xpToNext / (level.xp + level.xpToNext || 1)) * 100 : 100}
               size={140}
@@ -63,7 +77,7 @@ function JourneyInner() {
             ))}
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-3 mb-6">
             <GlassCard>
               <div className="text-2xl font-bold">{summary.counts.prayers}</div>
               <div className="text-sm opacity-70">Prayers</div>
@@ -77,6 +91,9 @@ function JourneyInner() {
               <div className="text-sm opacity-70">Dhikr</div>
             </GlassCard>
           </div>
+
+          <h3 className="font-semibold mb-2">Year in Review</h3>
+          <JourneyRecap summary={summary} heat={heat} />
         </>
       )}
       {!summary && <div className="opacity-60">Loading your journey…</div>}

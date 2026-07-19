@@ -4,6 +4,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import FloatingNav from "@/components/FloatingNav";
 import GlassCard from "@/components/GlassCard";
 import GlowButton from "@/components/GlowButton";
+import ChallengeProgress from "@/components/ChallengeProgress";
 import { useNotification } from "@/context/NotificationContext";
 import { apiCall } from "@/lib/api";
 
@@ -51,22 +52,14 @@ function ChallengesInner() {
   };
 
   const join = async (id) => {
-    try {
-      await apiCall("/api/challenges/join", { method: "POST", body: { challengeId: id } });
-      notify("Joined!", "success");
-      load();
-    } catch (e) {
-      notify(e.message, "error");
-    }
+    await apiCall("/api/challenges/join", { method: "POST", body: { challengeId: id } });
+    notify("Joined!", "success");
+    load();
   };
 
-  const progress = async (id, amount = 1) => {
-    try {
-      await apiCall("/api/challenges/progress", { method: "POST", body: { challengeId: id, amount } });
-      load();
-    } catch (e) {
-      notify(e.message, "error");
-    }
+  const progress = async (id) => {
+    await apiCall("/api/challenges/progress", { method: "POST", body: { challengeId: id, amount: 1 } });
+    load();
   };
 
   return (
@@ -95,36 +88,14 @@ function ChallengesInner() {
       </GlassCard>
 
       <h3 className="font-semibold mb-2">Available</h3>
-      <div className="space-y-3 mb-6">
-        {challenges.map((c) => {
-          const joined = mine.find((m) => String(m.challenge?._id) === String(c._id));
-          return (
-            <GlassCard key={c._id} className="flex justify-between items-center">
-              <div>
-                <div className="font-medium">{c.title}</div>
-                <div className="text-sm opacity-70">
-                  {c.goal} {c.unit} · {c.category}
-                </div>
-                {joined && (
-                  <div className="text-xs opacity-60 mt-1">
-                    Your progress: {joined.progress}/{c.goal} {joined.completed ? "✓" : ""}
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-col gap-2">
-                {joined ? (
-                  <GlowButton variant="ghost" onClick={() => progress(c._id)}>
-                    +1
-                  </GlowButton>
-                ) : (
-                  <GlowButton onClick={() => join(c._id)}>Join</GlowButton>
-                )}
-              </div>
-            </GlassCard>
-          );
-        })}
-        {challenges.length === 0 && <div className="opacity-60">No challenges yet.</div>}
-      </div>
+      <ChallengeProgress
+        challenges={challenges}
+        mine={mine}
+        onCreate={create}
+        onJoin={join}
+        onProgress={progress}
+        onError={(m) => notify(m, "error")}
+      />
     </main>
   );
 }

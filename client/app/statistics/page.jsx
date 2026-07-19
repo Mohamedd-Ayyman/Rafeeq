@@ -1,35 +1,17 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import FloatingNav from "@/components/FloatingNav";
 import GlassCard from "@/components/GlassCard";
 import AnimatedProgressRing from "@/components/AnimatedProgressRing";
+import StatsHeatmap from "@/components/StatsHeatmap";
+import JourneyRecap from "@/components/JourneyRecap";
 import { useNotification } from "@/context/NotificationContext";
 import { apiCall } from "@/lib/api";
 import { deriveLevel } from "@/lib/constants";
 
-function StatsHeatmap({ heat }) {
-  const days = useMemo(() => Object.keys(heat).sort(), [heat]);
-  const max = Math.max(1, ...days.map((d) => heat[d].total));
-  return (
-    <div className="grid grid-cols-7 gap-1">
-      {days.map((d) => {
-        const v = heat[d].total;
-        const intensity = Math.round((v / max) * 100);
-        return (
-          <div
-            key={d}
-            title={`${d}: ${v} actions`}
-            className="aspect-square rounded-md"
-            style={{
-              background: `rgba(16,185,129,${0.15 + intensity / 130})`,
-            }}
-          />
-        );
-      })}
-    </div>
-  );
-}
+const Chart = dynamic(() => import("@/components/StatsCharts"), { ssr: false });
 
 export default function StatisticsPage() {
   return (
@@ -53,6 +35,15 @@ function StatisticsInner() {
       .then((r) => setSummary(r.data))
       .catch(() => {});
   }, []);
+
+  const chartData = useMemo(
+    () =>
+      Object.keys(heat)
+        .sort()
+        .slice(-28)
+        .map((d) => ({ date: d.slice(5), ...heat[d] })),
+    [heat]
+  );
 
   return (
     <main className="min-h-screen px-4 pt-8 pb-32 max-w-3xl mx-auto">
@@ -84,14 +75,20 @@ function StatisticsInner() {
         </div>
       )}
 
-      <GlassCard>
-        <h3 className="font-semibold mb-3">Activity heatmap (90 days)</h3>
-        {Object.keys(heat).length ? (
-          <StatsHeatmap heat={heat} />
-        ) : (
-          <div className="opacity-60">No activity yet.</div>
-        )}
+      <GlassCard className="mb-4">
+        <h3 className="font-semibold mb-3">Activity (last 28 days)</h3>
+        <Chart data={chartData} />
       </GlassCard>
+
+      <h3 className="font-semibold mb-2">Activity heatmap (90 days)</h3>
+      <StatsHeatmap heat={heat} days={90} />
+
+      {summary && (
+        <>
+          <h3 className="font-semibold mt-6 mb-2">Year Recap</h3>
+          <JourneyRecap summary={summary} heat={heat} />
+        </>
+      )}
     </main>
   );
 }

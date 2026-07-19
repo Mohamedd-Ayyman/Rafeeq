@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import FloatingNav from "@/components/FloatingNav";
-import GlassCard from "@/components/GlassCard";
+import AchievementCard from "@/components/AchievementCard";
 import { useNotification } from "@/context/NotificationContext";
 import { apiCall } from "@/lib/api";
 
@@ -12,19 +12,6 @@ export default function AchievementsPage() {
       <AchievementsInner />
       <FloatingNav />
     </ProtectedRoute>
-  );
-}
-
-function AchievementCard({ a }) {
-  return (
-    <GlassCard className={a.unlocked ? "border-emerald-400/50" : "opacity-60"}>
-      <div className="text-3xl mb-2">
-        {a.unlocked ? "🏅" : "🔒"}
-      </div>
-      <div className="font-semibold">{a.title}</div>
-      <div className="text-sm opacity-70">{a.description}</div>
-      <div className="text-xs opacity-50 mt-1">+{a.xpReward} XP · {a.category}</div>
-    </GlassCard>
   );
 }
 
@@ -53,7 +40,7 @@ function AchievementsInner() {
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {achievements.map((a) => (
-            <AchievementCard key={a._id} a={a} />
+            <AchievementCard key={a._id} achievement={a} />
           ))}
         </div>
       )}
